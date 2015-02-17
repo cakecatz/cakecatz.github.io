@@ -1,0 +1,50 @@
+.navbar {
+  padding: 30px 50px;
+  background-color: black;
+  color: white;
+  font-size: 18px;
+}
+
+.navbar a{
+  color: white;
+}
+
+.navbar a:hover{
+  color: #ccc;
+  text-decoration: none;
+}
+
+.code-panel {
+  padding: 0 20px
+}
+
+.language-name {
+  cursor: pointer;
+}
+
+.code-line {
+  display: inline;
+}
+
+#language-selector {
+  display: none;
+  background: white;
+  position: absolute;
+  z-index: 9999;
+  border: solid 1px #333;
+  padding: 3px 15px;
+  border-radius: 2px;
+}
+
+#language-selector span{
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.units-split .unit-5 {
+  width: 5%;
+}
+
+.line-number {
+  text-align: right;
+}
