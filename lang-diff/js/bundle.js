@@ -9849,9 +9849,94 @@ module.exports = function(hljs) {
   };
 };
 },{}],115:[function(require,module,exports){
-window.hljs = require('highlight.js');
+var hljs, langDiff;
 
-window.langDiff = require('./langDiff.coffee');
+hljs = require('highlight.js');
+
+langDiff = require('./langDiff.coffee');
+
+window.app = {
+  reqListener: function(lang, pos) {
+    return function() {
+      var codeColumn, langSiteElem, numberColumn, o;
+      codeColumn = document.querySelector('.' + pos + '-code .code-column');
+      numberColumn = document.querySelector('.' + pos + '-code .number-column');
+      while (codeColumn.firstChild) {
+        codeColumn.removeChild(codeColumn.firstChild);
+      }
+      while (numberColumn.firstChild) {
+        numberColumn.removeChild(numberColumn.firstChild);
+      }
+      o = langDiff.translate(pos, lang, JSON.parse(this.responseText));
+      codeColumn.insertAdjacentHTML('beforeend', o.body);
+      document.querySelector('.' + pos + '-code .number-column').insertAdjacentHTML('beforeend', o.numberBody);
+      hljs.highlightBlock(document.querySelector('#' + o.id));
+      hljs.highlightBlock(document.querySelector('#' + o.id + '-number'));
+      document.querySelector('.' + pos + '-code .language-name').textContent = lang;
+      langSiteElem = document.querySelector('.' + pos + '-code .language-site');
+      if (langSiteElem.firstChild) {
+        langSiteElem.removeChild(langSiteElem.firstChild);
+      }
+      langSiteElem.insertAdjacentHTML('beforeend', langDiff.tag('a', 'OFFICIAL SITE', {
+        href: app.langInfo[lang.toLowerCase()].url,
+        target: "languageSite"
+      }));
+      return app.languSelectorEvent();
+    };
+  },
+  changeLang: function(lang, pos) {
+    var req;
+    req = new XMLHttpRequest();
+    req.onload = this.reqListener(lang, pos);
+    req.open("get", "./code/" + lang.toLowerCase() + ".json", true);
+    req.setRequestHeader('Cache-Control', 'no-cache');
+    return req.send();
+  },
+  languSelectorEvent: function() {
+    var i, langNames, langSelector, langSelectorLabel, _i, _j, _ref, _ref1;
+    langNames = document.querySelectorAll('span.language-name');
+    langSelector = document.getElementById('language-selector');
+    langSelectorLabel = document.querySelectorAll('#language-selector span');
+    for (i = _i = 0, _ref = langNames.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+      langNames[i].onclick = function() {
+        langSelector.style.display = 'initial';
+        langSelector.style.left = this.getBoundingClientRect().left + 'px';
+        langSelector.style.top = this.getBoundingClientRect().bottom + 'px';
+        if (window.innerWidth / 2 > this.getBoundingClientRect().left) {
+          return langSelector.pos = 'left';
+        } else {
+          return langSelector.pos = 'right';
+        }
+      };
+    }
+    for (i = _j = 0, _ref1 = langSelectorLabel.length; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
+      langSelectorLabel[i].onclick = function() {
+        return app.changeLang(this.textContent, this.parentNode.pos);
+      };
+    }
+    return langSelector.onclick = function() {
+      return this.style.display = 'none';
+    };
+  },
+  loadLanguageInfo: function() {
+    var req;
+    req = new XMLHttpRequest();
+    req.onload = function() {
+      return app.langInfo = JSON.parse(this.response);
+    };
+    req.open('get', "./langinfo.json", true);
+    req.setRequestHeader('Cache-Control', 'no-cache');
+    return req.send();
+  },
+  langInfo: {},
+  init: function() {
+    this.loadLanguageInfo();
+    this.changeLang('Rust', 'left');
+    return this.changeLang('C', 'right');
+  }
+};
+
+app.init();
 
 
 
@@ -9884,12 +9969,9 @@ langDiff = {
     };
   },
   lineNumber: function(number) {
-    var body, i, _i, _ref;
-    body = '<div class="line-number">';
-    for (i = _i = 0, _ref = 5 - number.toString().length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-      body += ' ';
-    }
-    return body + number + ' </div>';
+    return this.tag('div', number + '|', {
+      "class": 'line-number'
+    });
   },
   resolveName: function(name) {
     switch (name) {

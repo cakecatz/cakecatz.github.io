@@ -19,7 +19,12 @@
 }
 
 .language-name {
+  font-size: 30px;
   cursor: pointer;
+}
+
+.language-site a{
+  color: #666;
 }
 
 .code-line {
